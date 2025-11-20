@@ -33,7 +33,7 @@ Tested on **Windows** using **PowerShell** for Vagrant and **WSL (Windows Subsys
 Clone this repository to your local machine using **PowerShell** :
 
 ```powershell
-git clone https://github.com/your-username/ansible_webserver_setup.git
+[git clone https://github.com/your-username/ansible_webserver_setup.git](https://github.com/mohsin-q/ansible-webserver-setup.git)
 cd ansible_webserver_setup
 ```
 This will give you the full project structure:
