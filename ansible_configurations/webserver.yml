@@ -1,0 +1,63 @@
+---
+- name: Install and configure Apache web server
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Fix CentOS 7 yum repo (move to vault.centos.org)
+      replace:
+        path: /etc/yum.repos.d/CentOS-Base.repo
+        regexp: '^mirrorlist='
+        replace: '#mirrorlist='
+
+    - name: Set baseurl to vault.centos.org
+      replace:
+        path: /etc/yum.repos.d/CentOS-Base.repo
+        regexp: '^#baseurl=http://mirror.centos.org'
+        replace: 'baseurl=http://vault.centos.org'
+
+    - name: Clean yum cache
+      command: yum clean all
+
+    - name: Make yum cache
+      command: yum makecache
+
+    - name: Install Apache
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable Apache
+      systemd:
+        name: httpd
+        enabled: yes
+        state: started
+
+    - name: Open firewall ports
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+      notify: Reload firewalld
+
+    - name: Deploy custom HTML page from file
+      become: yes
+      copy:
+        src: files/index.html       # path relative to the playbook
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload Apache
+
+
+  handlers:
+    - name: Reload Apache
+      become: yes
+      systemd:
+        name: httpd
+        state: reloaded
+
+    - name: Reload firewalld
+      become: yes
+      command: firewall-cmd --reload
